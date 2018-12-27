@@ -568,16 +568,15 @@ class coss (Exchange):
             side = side.lower()
         symbol = None
         marketId = self.safe_string(trade, 'symbol')
-        if marketId is None:
-            if market is not None:
-                symbol = market['symbol']
-        else:
+        if marketId is not None:
             market = self.safe_value(self.markets_by_id, marketId, market)
             if market is None:
                 baseId, quoteId = marketId.split('_')
                 base = self.common_currency_code(baseId)
                 quote = self.common_currency_code(quoteId)
                 symbol = base + '/' + quote
+        elif market is not None:
+            symbol = market['symbol']
         cost = None
         price = self.safe_float(trade, 'price')
         amount = self.safe_float_2(trade, 'qty', 'quantity')
@@ -752,7 +751,7 @@ class coss (Exchange):
                 symbol = market['symbol']
         else:
             # a minor workaround for lowercase eth-btc symbols
-            marketId = marketId.toUppercase()
+            marketId = marketId.upper()
             marketId = marketId.replace('-', '_')
             market = self.safe_value(self.markets_by_id, marketId, market)
             if market is None:
@@ -760,6 +759,8 @@ class coss (Exchange):
                 base = self.common_currency_code(baseId)
                 quote = self.common_currency_code(quoteId)
                 symbol = base + '/' + quote
+            else:
+                symbol = market['symbol']
         timestamp = self.safe_integer(order, 'createTime')
         status = self.parse_order_status(self.safe_string(order, 'status'))
         price = self.safe_float(order, 'order_price')

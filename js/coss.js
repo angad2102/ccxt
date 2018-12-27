@@ -593,11 +593,7 @@ module.exports = class coss extends Exchange {
         }
         let symbol = undefined;
         const marketId = this.safeString (trade, 'symbol');
-        if (marketId === undefined) {
-            if (market !== undefined) {
-                symbol = market['symbol'];
-            }
-        } else {
+        if (marketId !== undefined) {
             market = this.safeValue (this.markets_by_id, marketId, market);
             if (market === undefined) {
                 const [ baseId, quoteId ] = marketId.split ('_');
@@ -605,6 +601,8 @@ module.exports = class coss extends Exchange {
                 const quote = this.commonCurrencyCode (quoteId);
                 symbol = base + '/' + quote;
             }
+        } else if (market !== undefined) {
+            symbol = market['symbol'];
         }
         let cost = undefined;
         const price = this.safeFloat (trade, 'price');
@@ -798,7 +796,7 @@ module.exports = class coss extends Exchange {
             }
         } else {
             // a minor workaround for lowercase eth-btc symbols
-            marketId = marketId.toUppercase ();
+            marketId = marketId.toUpperCase ();
             marketId = marketId.replace ('-', '_');
             market = this.safeValue (this.markets_by_id, marketId, market);
             if (market === undefined) {
@@ -806,6 +804,8 @@ module.exports = class coss extends Exchange {
                 const base = this.commonCurrencyCode (baseId);
                 const quote = this.commonCurrencyCode (quoteId);
                 symbol = base + '/' + quote;
+            } else {
+                symbol = market['symbol'];
             }
         }
         const timestamp = this.safeInteger (order, 'createTime');

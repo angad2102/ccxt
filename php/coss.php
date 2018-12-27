@@ -594,11 +594,7 @@ class coss extends Exchange {
         }
         $symbol = null;
         $marketId = $this->safe_string($trade, 'symbol');
-        if ($marketId === null) {
-            if ($market !== null) {
-                $symbol = $market['symbol'];
-            }
-        } else {
+        if ($marketId !== null) {
             $market = $this->safe_value($this->markets_by_id, $marketId, $market);
             if ($market === null) {
                 list ($baseId, $quoteId) = explode ('_', $marketId);
@@ -606,6 +602,8 @@ class coss extends Exchange {
                 $quote = $this->common_currency_code($quoteId);
                 $symbol = $base . '/' . $quote;
             }
+        } else if ($market !== null) {
+            $symbol = $market['symbol'];
         }
         $cost = null;
         $price = $this->safe_float($trade, 'price');
@@ -799,7 +797,7 @@ class coss extends Exchange {
             }
         } else {
             // a minor workaround for lowercase eth-btc symbols
-            $marketId = $marketId->toUppercase ();
+            $marketId = strtoupper ($marketId);
             $marketId = str_replace ('-', '_', $marketId);
             $market = $this->safe_value($this->markets_by_id, $marketId, $market);
             if ($market === null) {
@@ -807,6 +805,8 @@ class coss extends Exchange {
                 $base = $this->common_currency_code($baseId);
                 $quote = $this->common_currency_code($quoteId);
                 $symbol = $base . '/' . $quote;
+            } else {
+                $symbol = $market['symbol'];
             }
         }
         $timestamp = $this->safe_integer($order, 'createTime');

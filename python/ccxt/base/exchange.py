@@ -4,7 +4,7 @@
 
 # -----------------------------------------------------------------------------
 
-__version__ = '1.18.58'
+__version__ = '1.18.73'
 
 # -----------------------------------------------------------------------------
 
@@ -427,7 +427,7 @@ class Exchange(object):
                 proxies=self.proxies
             )
             http_response = response.text
-            json_response = self.parse_json(http_response)
+            json_response = self.parse_json(http_response) if self.is_json_encoded_object(http_response) else None
             headers = response.headers
             # FIXME remove last_x_responses from subclasses
             if self.enableLastHttpResponse:
@@ -490,10 +490,7 @@ class Exchange(object):
 
     def parse_json(self, http_response):
         try:
-            if self.parseJsonResponse:
-                return json.loads(http_response)
-            else:
-                return http_response
+            return json.loads(http_response)
         except ValueError:  # superclass of JsonDecodeError (python2)
             pass
 
@@ -925,11 +922,14 @@ class Exchange(object):
     def nonce(self):
         return Exchange.seconds()
 
-    def check_required_credentials(self):
+    def check_required_credentials(self, error=True):
         keys = list(self.requiredCredentials.keys())
         for key in keys:
             if self.requiredCredentials[key] and not getattr(self, key):
-                self.raise_error(AuthenticationError, details='requires `' + key + '`')
+                if error:
+                    self.raise_error(AuthenticationError, details='requires `' + key + '`')
+                else:
+                    return error
 
     def check_address(self, address):
         """Checks an address is not the same character repeated or an empty sequence"""
